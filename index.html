@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel数据处理工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#8B5CF6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        info: '#3B82F6',
+                        light: '#F3F4F6',
+                        dark: '#1F2937',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            }
+            .progress-bar {
+                height: 4px;
+                background: linear-gradient(90deg, #4F46E5, #8B5CF6);
+                transition: width 0.3s ease;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <!-- 顶部导航 -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="text-primary font-bold text-xl flex items-center">
+                        <i class="fa fa-table mr-2"></i>
+                        <span>Excel数据处理工具</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="#features" class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">功能特点</a>
+                    <a href="#how-to-use" class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">使用指南</a>
+                    <a href="#faq" class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">常见问题</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 主要内容区域 -->
+        <div class="mb-12">
+            <h1 class="text-[clamp(2rem,5vw,3rem)] font-bold text-gray-900 text-center mb-4">
+                智能Excel数据处理助手
+            </h1>
+            <p class="text-gray-600 text-center max-w-3xl mx-auto text-lg">
+                轻松处理Excel表格中的县域名称识别、指标名称去重和数据一一对应，所有操作均在本地完成，数据安全无忧。
+            </p>
+        </div>
+
+        <!-- 功能卡片区域 -->
+        <section id="features" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center justify-center w-12 h-12 bg-primary/10 text-primary rounded-lg mb-4">
+                    <i class="fa fa-filter text-xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">指标名称去重</h3>
+                <p class="text-gray-600">自动识别Excel中的指标名称，消除重复项，确保每个指标只出现一次。</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center justify-center w-12 h-12 bg-secondary/10 text-secondary rounded-lg mb-4">
+                    <i class="fa fa-map-marker text-xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">县域名称识别</h3>
+                <p class="text-gray-600">智能识别Excel中的县域名称项目，准确升序排列，确保数据准确性。</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center justify-center w-12 h-12 bg-success/10 text-success rounded-lg mb-4">
+                    <i class="fa fa-exchange text-xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">数据一一对应</h3>
+                <p class="text-gray-600">严格保证县域与指标数据的对应关系，确保处理后数据的准确性与完整性。</p>
+            </div>
+        </section>
+
+        <!-- 文件上传区域 -->
+        <section class="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-8 mb-16 border border-gray-100">
+            <h2 class="text-2xl font-bold text-center mb-6">上传Excel文件</h2>
+            
+            <div id="drop-area" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center transition-colors hover:border-primary/50 hover:bg-primary/5 cursor-pointer mb-6">
+                <i class="fa fa-file-excel-o text-4xl text-primary mb-4"></i>
+                <p class="text-gray-600 mb-2">点击上传或拖放Excel文件到此处</p>
+                <p class="text-sm text-gray-500">支持 .xlsx 格式文件</p>
+                <input type="file" id="file-input" accept=".xlsx" class="hidden">
+            </div>
+
+            <div id="file-info" class="hidden mb-6 p-4 bg-gray-50 rounded-lg">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fa fa-file-text-o text-primary mr-3"></i>
+                        <span id="file-name" class="text-gray-800"></span>
+                    </div>
+                    <button id="remove-file" class="text-gray-500 hover:text-danger transition-colors">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+                <div class="mt-2">
+                    <div id="progress-container" class="w-full bg-gray-200 rounded-full h-1.5 hidden">
+                        <div id="progress-bar" class="progress-bar h-1.5 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <button id="process-btn" class="w-full bg-primary hover:bg-primary/90 text-white py-3 px-4 rounded-lg font-medium transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center">
+                <i class="fa fa-cog mr-2"></i>
+                处理文件
+            </button>
+
+            <div id="error-message" class="mt-4 text-danger text-center hidden">
+                <i class="fa fa-exclamation-circle mr-1"></i>
+                <span></span>
+            </div>
+        </section>
+
+        <!-- 处理结果区域 -->
+        <section id="result-section" class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-8 mb-16 hidden">
+            <h2 class="text-2xl font-bold text-center mb-6">处理结果</h2>
+            
+            <div class="bg-success/10 text-success p-4 rounded-lg mb-6">
+                <div class="flex items-start">
+                    <i class="fa fa-check-circle text-xl mr-3 mt-1"></i>
+                    <div>
+                        <h3 class="font-semibold">数据处理成功！</h3>
+                        <p class="text-sm">已完成县域名称识别、指标去重和数据对应</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-500">原始文件名</p>
+                    <p id="original-filename" class="font-medium"></p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-500">县域数量</p>
+                    <p id="county-count" class="font-medium"></p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-500">指标数量</p>
+                    <p id="indicator-count" class="font-medium"></p>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-3">处理结果预览</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">县域名称</th>
+                                <th id="indicator-headers" scope="colgroup" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <!-- 动态生成的指标表头 -->
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="result-table-body" class="bg-white divide-y divide-gray-200">
+                            <!-- 动态生成的数据行 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4">
+                <button id="download-btn" class="flex-grow bg-primary hover:bg-primary/90 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center">
+                    <i class="fa fa-download mr-2"></i>
+                    下载处理结果
+                </button>
+                <button id="new-file-btn" class="flex-grow bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center">
+                    <i class="fa fa-plus mr-2"></i>
+                    上传新文件
+                </button>
+            </div>
+        </section>
+
+        <!-- 使用指南 -->
+        <section id="how-to-use" class="max-w-3xl mx-auto mb-16">
+            <h2 class="text-2xl font-bold text-center mb-8">使用指南</h2>
+            <div class="space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold">1</div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-semibold mb-2">准备Excel文件</h3>
+                            <p class="text-gray-600">确保您的Excel文件包含县域名称和对应的指标数据。文件格式应为.xlsx。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold">2</div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-semibold mb-2">上传文件</h3>
+                            <p class="text-gray-600">点击上传区域或拖放您的Excel文件到页面中央的上传区域。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold">3</div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-semibold mb-2">处理数据</h3>
+                            <p class="text-gray-600">点击"处理文件"按钮，系统将自动处理您的Excel数据，包括县域识别、指标去重等。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold">4</div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-semibold mb-2">下载结果</h3>
+                            <p class="text-gray-600">处理完成后，您可以预览结果并下载处理后的Excel文件。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 常见问题 -->
+        <section id="faq" class="max-w-3xl mx-auto mb-16">
+            <h2 class="text-2xl font-bold text-center mb-8">常见问题</h2>
+            <div class="space-y-4">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-lg font-semibold mb-2">Q: 文件处理在本地进行吗？</h3>
+                    <p class="text-gray-600">A: 是的，所有的数据处理都在您的浏览器本地进行，不会上传到服务器，保护您的数据安全。</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-lg font-semibold mb-2">Q: 支持哪些Excel格式？</h3>
+                    <p class="text-gray-600">A: 目前支持.xlsx格式的Excel文件。</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-lg font-semibold mb-2">Q: 最大支持多大的文件？</h3>
+                    <p class="text-gray-600">A: 由于是浏览器本地处理，建议文件大小不超过20MB，以保证处理速度和稳定性。</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between">
+                <div class="mb-8 md:mb-0">
+                    <div class="text-xl font-bold flex items-center">
+                        <i class="fa fa-table mr-2"></i>
+                        <span>Excel数据处理工具</span>
+                    </div>
+                    <p class="mt-2 text-gray-400">简单、高效的数据处理解决方案</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">快速链接</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#features" class="text-gray-400 hover:text-white transition-colors">功能特点</a></li>
+                        <li><a href="#how-to-use" class="text-gray-400 hover:text-white transition-colors">使用指南</a></li>
+                        <li><a href="#faq" class="text-gray-400 hover:text-white transition-colors">常见问题</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400">
+                <p>&copy; 2024 Excel数据处理工具. 保留所有权利。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 全局变量
+        let currentFile = null;
+        let processedData = null;
+        
+        // DOM元素
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('file-input');
+        const fileInfo = document.getElementById('file-info');
+        const fileName = document.getElementById('file-name');
+        const removeFileBtn = document.getElementById('remove-file');
+        const processBtn = document.getElementById('process-btn');
+        const errorMessage = document.getElementById('error-message');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        const resultSection = document.getElementById('result-section');
+        const originalFilename = document.getElementById('original-filename');
+        const countyCount = document.getElementById('county-count');
+        const indicatorCount = document.getElementById('indicator-count');
+        const indicatorHeaders = document.getElementById('indicator-headers');
+        const resultTableBody = document.getElementById('result-table-body');
+        const downloadBtn = document.getElementById('download-btn');
+        const newFileBtn = document.getElementById('new-file-btn');
+
+        // 初始化处理按钮状态
+        processBtn.disabled = true;
+
+        // 文件拖放事件
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            dropArea.classList.add('border-primary', 'bg-primary/10');
+        }
+
+        function unhighlight() {
+            dropArea.classList.remove('border-primary', 'bg-primary/10');
+        }
+
+        // 处理拖放的文件
+        dropArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        }
+
+        // 点击上传区域触发文件选择
+        dropArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // 处理选择的文件
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                handleFile(fileInput.files[0]);
+            }
+        });
+
+        // 处理文件
+        function handleFile(file) {
+            // 检查文件类型
+            if (!file.name.endsWith('.xlsx')) {
+                showError('请上传.xlsx格式的Excel文件');
+                return;
+            }
+
+            // 检查文件大小 (20MB 限制)
+            if (file.size > 20 * 1024 * 1024) {
+                showError('文件大小不能超过20MB');
+                return;
+            }
+
+            // 保存当前文件
+            currentFile = file;
+            fileName.textContent = file.name;
+            fileInfo.classList.remove('hidden');
+            processBtn.disabled = false;
+            hideError();
+        }
+
+        // 移除文件
+        removeFileBtn.addEventListener('click', () => {
+            currentFile = null;
+            fileInfo.classList.add('hidden');
+            processBtn.disabled = true;
+            fileInput.value = '';
+            hideError();
+        });
+
+        // 显示错误信息
+        function showError(message) {
+            errorMessage.querySelector('span').textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+
+        // 隐藏错误信息
+        function hideError() {
+            errorMessage.classList.add('hidden');
+        }
+
+        // 显示进度条
+        function showProgress(percent) {
+            progressContainer.classList.remove('hidden');
+            progressBar.style.width = `${percent}%`;
+        }
+
+        // 隐藏进度条
+        function hideProgress() {
+            progressContainer.classList.add('hidden');
+            progressBar.style.width = '0%';
+        }
+
+        // 处理文件按钮
+        processBtn.addEventListener('click', processExcelFile);
+
+        // 处理Excel文件
+        function processExcelFile() {
+            if (!currentFile) return;
+
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    // 显示进度
+                    showProgress(20);
+                    
+                    // 读取Excel文件
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    showProgress(40);
+                    
+                    // 获取第一个工作表
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // 转换为JSON
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    
+                    showProgress(60);
+                    
+                    // 处理数据
+                    processedData = processData(jsonData);
+                    
+                    showProgress(80);
+                    
+                    // 显示结果
+                    displayResults(processedData);
+                    
+                    showProgress(100);
+                    
+                    // 延迟隐藏进度条并显示结果
+                    setTimeout(() => {
+                        hideProgress();
+                        resultSection.classList.remove('hidden');
+                        // 滚动到结果区域
+                        resultSection.scrollIntoView({ behavior: 'smooth' });
+                    }, 500);
+                    
+                } catch (error) {
+                    hideProgress();
+                    showError('文件解析失败，请检查文件格式是否正确。');
+                    console.error('Excel processing error:', error);
+                }
+            };
+            
+            reader.readAsArrayBuffer(currentFile);
+        }
+
+        // 处理数据的核心函数
+        function processData(jsonData) {
+            // 查找表头行（第一个非空行）
+            let headerRowIndex = -1;
+            for (let i = 0; i < jsonData.length; i++) {
+                if (jsonData[i] && jsonData[i].length > 0) {
+                    headerRowIndex = i;
+                    break;
+                }
+            }
+            
+            if (headerRowIndex === -1) {
+                throw new Error('无法找到表头');
+            }
+            
+            // 提取表头
+            const headers = jsonData[headerRowIndex].filter(h => h && h.trim() !== '');
+            
+            // 找到可能的县域列（通常是第一列）
+            const countyColumnIndex = 0;
+            
+            // 提取县域名称和指标数据
+            const countyData = [];
+            const indicators = new Set();
+            
+            // 从表头行的下一行开始处理数据
+            for (let i = headerRowIndex + 1; i < jsonData.length; i++) {
+                const row = jsonData[i];
+                if (row && row.length > 0 && row[countyColumnIndex]) {
+                    const countyName = String(row[countyColumnIndex]).trim();
+                    if (countyName) {
+                        const countyInfo = {
+                            name: countyName,
+                            data: {}
+                        };
+                        
+                        // 处理该行的指标数据
+                        for (let j = 1; j < headers.length && j < row.length; j++) {
+                            const indicator = String(headers[j]).trim();
+                            if (indicator) {
+                                indicators.add(indicator);
+                                countyInfo.data[indicator] = row[j] !== undefined ? row[j] : '';
+                            }
+                        }
+                        
+                        countyData.push(countyInfo);
+                    }
+                }
+            }
+            
+            // 对县域进行排序（按名称拼音排序）
+            countyData.sort((a, b) => {
+                return a.name.localeCompare(b.name, 'zh-CN');
+            });
+            
+            // 将Set转换为数组并排序
+            const indicatorArray = Array.from(indicators).sort();
+            
+            return {
+                counties: countyData,
+                indicators: indicatorArray,
+                originalFilename: currentFile.name
+            };
+        }
+
+        // 显示处理结果
+        function displayResults(data) {
+            // 设置基本信息
+            originalFilename.textContent = data.originalFilename;
+            countyCount.textContent = data.counties.length;
+            indicatorCount.textContent = data.indicators.length;
+            
+            // 生成表头
+            indicatorHeaders.innerHTML = '';
+            data.indicators.forEach(indicator => {
+                const th = document.createElement('th');
+                th.scope = 'col';
+                th.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                th.textContent = indicator;
+                indicatorHeaders.appendChild(th);
+            });
+            
+            // 生成表格内容
+            resultTableBody.innerHTML = '';
+            data.counties.forEach(county => {
+                const tr = document.createElement('tr');
+                
+                // 县域名称单元格
+                const nameTd = document.createElement('td');
+                nameTd.className = 'px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900';
+                nameTd.textContent = county.name;
+                tr.appendChild(nameTd);
+                
+                // 指标数据单元格
+                data.indicators.forEach(indicator => {
+                    const td = document.createElement('td');
+                    td.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500';
+                    td.textContent = county.data[indicator] !== undefined ? county.data[indicator] : '';
+                    tr.appendChild(td);
+                });
+                
+                resultTableBody.appendChild(tr);
+            });
+        }
+
+        // 下载处理结果
+        downloadBtn.addEventListener('click', downloadExcel);
+
+        function downloadExcel() {
+            if (!processedData) return;
+            
+            try {
+                // 准备数据
+                const headers = ['县域名称', ...processedData.indicators];
+                const rows = [headers];
+                
+                processedData.counties.forEach(county => {
+                    const row = [county.name];
+                    processedData.indicators.forEach(indicator => {
+                        row.push(county.data[indicator] !== undefined ? county.data[indicator] : '');
+                    });
+                    rows.push(row);
+                });
+                
+                // 创建工作簿和工作表
+                const ws = XLSX.utils.aoa_to_sheet(rows);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, '处理结果');
+                
+                // 生成文件名
+                const originalName = processedData.originalFilename;
+                const baseName = originalName.substring(0, originalName.lastIndexOf('.')) || originalName;
+                const newFileName = `${baseName}_处理结果.xlsx`;
+                
+                // 下载文件
+                XLSX.writeFile(wb, newFileName);
+                
+            } catch (error) {
+                showError('文件生成失败，请重试。');
+                console.error('Excel generation error:', error);
+            }
+        }
+
+        // 上传新文件
+        newFileBtn.addEventListener('click', () => {
+            // 重置状态
+            resultSection.classList.add('hidden');
+            removeFileBtn.click();
+            
+            // 滚动到上传区域
+            dropArea.scrollIntoView({ behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
