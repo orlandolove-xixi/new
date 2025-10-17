@@ -7,16 +7,8 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Node.js dependencies
+# Dependencies
 node_modules
-.pnp
-.pnp.js
-
-# Testing
-coverage
-
-# Production
-build
 dist
 dist-ssr
 *.local
@@ -32,15 +24,6 @@ dist-ssr
 *.sln
 *.sw?
 
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
 # Environment variables
 .env
 .env.local
@@ -48,7 +31,43 @@ Thumbs.db
 .env.test.local
 .env.production.local
 
-# Temporary files
-*.tmp
-*.temp
-.cache
+# Build files
+build/
+.cache/
+
+# OS generated files
+Thumbs.db
+.DS_Store
+
+# IDE specific files
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.iml
+.vscode/
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/

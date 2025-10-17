@@ -1,0 +1,28 @@
+{
+  "name": "excel-data-processing-tool",
+  "version": "1.0.0",
+  "description": "四川省Excel数据处理工具静态网站版",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "echo \"静态网站无需构建，直接部署index.html和success.html\"",
+    "deploy": "echo \"请参考README.md中的部署指南部署到GitHub Pages\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/excel-data-processing-tool.git"
+  },
+  "keywords": [
+    "excel",
+    "data-processing",
+    "static-website",
+    "github-pages"
+  ],
+  "author": "四川省数据处理平台",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yourusername/excel-data-processing-tool/issues"
+  },
+  "homepage": "https://yourusername.github.io/excel-data-processing-tool/",
+  "devDependencies": {}
+}
